@@ -45,9 +45,11 @@ class UserController extends Controller
     public function register(Request $request)
     {
         $payload = [
-            'password'=>\Hash::make($request->password),
-            'email'=>$request->email,
-            'name'=>$request->name,
+            'etunimi'=>$request->user["etunimi"],
+            'sukunimi'=>$request->user["sukunimi"],
+            'email'=>$request->user["email"],
+            'rekisteri'=>$request->user["rekisteri"],
+            'password'=>\Hash::make($request->user["password"]),
             'auth_token'=> ''
         ];
 
@@ -55,17 +57,17 @@ class UserController extends Controller
         if ($user->save())
         {
 
-            $token = self::getToken($request->email, $request->password); // generate user token
+            $token = self::getToken($request->user["email"], $request->user["password"]); // generate user token
 
             if (!is_string($token))  return response()->json(['success'=>false,'data'=>'Token generation failed'], 201);
 
-            $user = \App\User::where('email', $request->email)->get()->first();
+            $user = \App\User::where('email', $request->user["email"])->get()->first();
 
             $user->auth_token = $token; // update user token
 
             $user->save();
 
-            $response = ['success'=>true, 'data'=>['name'=>$user->name,'id'=>$user->id,'email'=>$request->email,'auth_token'=>$token]];
+            $response = ['success'=>true, 'data'=>['name'=>$user->etunimi,'id'=>$user->id,'email'=>$request->email,'auth_token'=>$token]];
         }
         else
             $response = ['success'=>false, 'data'=>'Couldnt register user'];
